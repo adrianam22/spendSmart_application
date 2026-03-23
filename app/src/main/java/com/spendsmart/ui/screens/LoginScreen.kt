@@ -1,11 +1,9 @@
 package com.spendsmart.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -21,11 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.spendsmart.ui.theme.*
 
 @Composable
 fun LoginScreen(onLoginSuccess: () -> Unit) {
@@ -36,10 +32,12 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
     var emailErr by remember { mutableStateOf("") }
     var passErr  by remember { mutableStateOf("") }
 
+    val colorScheme = MaterialTheme.colorScheme
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(GrayLight)
+            .background(colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -52,7 +50,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             modifier = Modifier
                 .size(80.dp)
                 .clip(RoundedCornerShape(24.dp))
-                .background(GreenAccent),
+                .background(colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Text("💰", fontSize = 36.sp)
@@ -64,13 +62,13 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             text = "SpendSmart",
             fontSize = 26.sp,
             fontWeight = FontWeight.Black,
-            color = Black
+            color = colorScheme.onBackground
         )
 
         Text(
             text = "Track your spending smartly",
             fontSize = 14.sp,
-            color = TextSecondary,
+            color = colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp)
         )
 
@@ -80,50 +78,49 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(containerColor = White),
+            colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
             elevation = CardDefaults.cardElevation(4.dp)
         ) {
             Column(Modifier.padding(24.dp)) {
 
                 // Email
-                Text("Email", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Black)
+                Text("Email", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = colorScheme.onSurface)
                 Spacer(Modifier.height(6.dp))
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it; emailErr = "" },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("example@email.com", color = TextSecondary) },
-                    leadingIcon = { Icon(Icons.Default.Email, null, tint = TextSecondary) },
+                    placeholder = { Text("example@email.com") },
+                    leadingIcon = { Icon(Icons.Default.Email, null) },
                     shape = RoundedCornerShape(50.dp),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     isError = emailErr.isNotEmpty(),
-                    supportingText = if (emailErr.isNotEmpty()) {{ Text(emailErr, color = RedColor, fontSize = 12.sp) }} else null,
+                    supportingText = if (emailErr.isNotEmpty()) {{ Text(emailErr) }} else null,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Black,
-                        unfocusedBorderColor = GrayBorder,
-                        focusedContainerColor = White,
-                        unfocusedContainerColor = White
+                        focusedBorderColor = colorScheme.primary,
+                        unfocusedBorderColor = colorScheme.outline,
+                        errorBorderColor = colorScheme.error
                     )
                 )
 
                 Spacer(Modifier.height(12.dp))
 
                 // Password
-                Text("Password", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Black)
+                Text("Password", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = colorScheme.onSurface)
                 Spacer(Modifier.height(6.dp))
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it; passErr = "" },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("••••••••", color = TextSecondary) },
-                    leadingIcon = { Icon(Icons.Default.Lock, null, tint = TextSecondary) },
+                    placeholder = { Text("••••••••") },
+                    leadingIcon = { Icon(Icons.Default.Lock, null) },
                     visualTransformation = if (showPass) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         Text(
                             if (showPass) "Hide" else "Show",
                             fontSize = 12.sp, fontWeight = FontWeight.Bold,
-                            color = TextSecondary,
+                            color = colorScheme.primary,
                             modifier = Modifier
                                 .clickable { showPass = !showPass }
                                 .padding(end = 8.dp)
@@ -132,12 +129,11 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                     shape = RoundedCornerShape(50.dp),
                     singleLine = true,
                     isError = passErr.isNotEmpty(),
-                    supportingText = if (passErr.isNotEmpty()) {{ Text(passErr, color = RedColor, fontSize = 12.sp) }} else null,
+                    supportingText = if (passErr.isNotEmpty()) {{ Text(passErr) }} else null,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Black,
-                        unfocusedBorderColor = GrayBorder,
-                        focusedContainerColor = White,
-                        unfocusedContainerColor = White
+                        focusedBorderColor = colorScheme.primary,
+                        unfocusedBorderColor = colorScheme.outline,
+                        errorBorderColor = colorScheme.error
                     )
                 )
 
@@ -146,7 +142,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                     Text(
                         "Forgot password?",
                         fontSize = 13.sp, fontWeight = FontWeight.Bold,
-                        color = TextSecondary,
+                        color = colorScheme.secondary,
                         modifier = Modifier
                             .padding(top = 8.dp, bottom = 18.dp)
                             .clickable { }
@@ -167,9 +163,9 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                         .fillMaxWidth()
                         .height(54.dp),
                     shape = RoundedCornerShape(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Black)
+                    colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary)
                 ) {
-                    Text("Sign In", fontSize = 16.sp, fontWeight = FontWeight.Black, color = White)
+                    Text("Sign In", fontSize = 16.sp, fontWeight = FontWeight.Black, color = colorScheme.onPrimary)
                 }
 
                 // Divider
@@ -179,9 +175,9 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                         .padding(vertical = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    HorizontalDivider(Modifier.weight(1f), color = GrayBorder)
-                    Text(" OR ", fontSize = 12.sp, color = TextSecondary, fontWeight = FontWeight.Bold)
-                    HorizontalDivider(Modifier.weight(1f), color = GrayBorder)
+                    HorizontalDivider(Modifier.weight(1f), color = colorScheme.outlineVariant)
+                    Text(" OR ", fontSize = 12.sp, color = colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
+                    HorizontalDivider(Modifier.weight(1f), color = colorScheme.outlineVariant)
                 }
 
                 // Fingerprint button
@@ -194,7 +190,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                     border = ButtonDefaults.outlinedButtonBorder.copy(
                         width = 2.dp
                     ),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Black)
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = colorScheme.primary)
                 ) {
                     Text("🫆  ", fontSize = 18.sp)
                     Text("Sign In with Fingerprint", fontSize = 15.sp, fontWeight = FontWeight.Black)
@@ -206,11 +202,11 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Text("Don't have an account? ", fontSize = 13.sp, color = TextSecondary)
+                    Text("Don't have an account? ", fontSize = 13.sp, color = colorScheme.onSurfaceVariant)
                     Text(
                         "Sign Up",
                         fontSize = 13.sp, fontWeight = FontWeight.Black,
-                        color = Black,
+                        color = colorScheme.primary,
                         textDecoration = TextDecoration.Underline,
                         modifier = Modifier.clickable { }
                     )

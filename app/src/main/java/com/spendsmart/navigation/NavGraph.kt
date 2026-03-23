@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -25,7 +27,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.spendsmart.ui.screens.*
-import com.spendsmart.ui.theme.GreenAccent
+import com.spendsmart.ui.theme.SuccessGreen
 
 // ══════════════════════════════════════
 //  ROUTES
@@ -61,14 +63,20 @@ val pagesWithoutNav = listOf(Routes.LOGIN)
 //  MAIN SCAFFOLD + NAV GRAPH
 // ══════════════════════════════════════
 @Composable
-fun NavGraph(navController: NavHostController) {
+fun NavGraph(
+    navController: NavHostController,
+    isDarkMode: Boolean,
+    onDarkModeChange: (Boolean) -> Unit
+) {
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val showBottomNav = currentRoute !in pagesWithoutNav
+    
+    val colorScheme = MaterialTheme.colorScheme
 
     Scaffold(
-        containerColor = Color(0xFFF0F2F5),
+        containerColor = colorScheme.background,
         bottomBar = {
             if (showBottomNav) {
                 BottomNavBar(navController = navController)
@@ -123,7 +131,9 @@ fun NavGraph(navController: NavHostController) {
                         navController.navigate(Routes.LOGIN) {
                             popUpTo(0) { inclusive = true }
                         }
-                    }
+                    },
+                    isDarkMode = isDarkMode,
+                    onDarkModeChange = onDarkModeChange
                 )
             }
         }
@@ -138,13 +148,14 @@ fun BottomNavBar(navController: NavHostController) {
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val colorScheme = MaterialTheme.colorScheme
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .shadow(24.dp, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
             .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-            .background(Color.White)
+            .background(colorScheme.surface)
             .padding(horizontal = 8.dp, vertical = 10.dp)
     ) {
         Row(
@@ -164,17 +175,15 @@ fun BottomNavBar(navController: NavHostController) {
                     contentAlignment = Alignment.Center
 
                 ) {
-                    // Central floating-style button for adding a new transaction
-                    // Navigates to Add Transaction screen
                     if (item.route == Routes.ADD_TRANSACTION) {
                         Box(
                             modifier = Modifier
-                                .size(56.dp)
-                                .shadow(8.dp, RoundedCornerShape(18.dp))
+                                .size(48.dp)
+                                .shadow(8.dp, RoundedCornerShape(16.dp))
                                 .clip(RoundedCornerShape(14.dp))
                                 .background(
                                     Brush.linearGradient(
-                                        colors = listOf(Color(0xFF1A1A2E), Color(0xFF0F3460))
+                                        colors = listOf(colorScheme.primary, colorScheme.primaryContainer)
                                     )
                                 )
                                 .clickable {
@@ -184,16 +193,15 @@ fun BottomNavBar(navController: NavHostController) {
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                "＋",
-                                fontSize = 26.sp,
-                                color = GreenAccent,
-                                fontWeight = FontWeight.Black
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add",
+                                tint = colorScheme.onPrimary,
+                                modifier = Modifier.size(28.dp)
                             )
                         }
 
                     } else {
-                        // Standard bottom navigation item (Home, Budgets, Settings)
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -221,7 +229,7 @@ fun BottomNavBar(navController: NavHostController) {
                                         modifier = Modifier
                                             .size(5.dp)
                                             .clip(CircleShape)
-                                            .background(GreenAccent)
+                                            .background(colorScheme.primary)
                                             .align(Alignment.BottomCenter)
                                             .offset(y = 6.dp)
                                     )
@@ -234,7 +242,7 @@ fun BottomNavBar(navController: NavHostController) {
                                 text = item.label,
                                 fontSize = 10.sp,
                                 fontWeight = if (isSelected) FontWeight.Black else FontWeight.Medium,
-                                color = if (isSelected) Color(0xFF1A1A2E) else Color(0xFF94A3B8)
+                                color = if (isSelected) colorScheme.primary else colorScheme.onSurfaceVariant
                             )
                         }
                     }

@@ -43,20 +43,22 @@ fun DashboardScreen(
         Triple("March Salary", "Income · Mar 1", +5000f),
     )
 
+    val colorScheme = MaterialTheme.colorScheme
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF0F2F5))
+            .background(colorScheme.background)
             .verticalScroll(rememberScrollState())
     ) {
 
-        // ── HEADER cu gradient ──
+        // ── HEADER ──
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color(0xFF1A1A2E), Color(0xFF16213E))
+                        colors = listOf(colorScheme.primary, colorScheme.primaryContainer)
                     )
                 )
                 .padding(horizontal = 20.dp, vertical = 16.dp)
@@ -70,7 +72,7 @@ fun DashboardScreen(
                     modifier = Modifier
                         .size(44.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(GreenAccent),
+                        .background(colorScheme.onPrimary.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) { Text("💰", fontSize = 20.sp) }
 
@@ -78,16 +80,16 @@ fun DashboardScreen(
 
                 Column {
                     Text(
-                        "Good morning,",
+                        "Hello,",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF94A3B8)
+                        color = colorScheme.onPrimary.copy(alpha = 0.7f)
                     )
                     Text(
                         "SpendSmart",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Black,
-                        color = Color.White
+                        color = colorScheme.onPrimary
                     )
                 }
 
@@ -98,14 +100,14 @@ fun DashboardScreen(
                     modifier = Modifier
                         .size(44.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFF1E2D4A))
+                        .background(colorScheme.onPrimary.copy(alpha = 0.1f))
                         .clickable { },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.Notifications,
                         null,
-                        tint = Color.White,
+                        tint = colorScheme.onPrimary,
                         modifier = Modifier.size(22.dp)
                     )
                     // Red dot
@@ -113,16 +115,16 @@ fun DashboardScreen(
                         modifier = Modifier
                             .size(9.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFEF4444))
+                            .background(colorScheme.error)
                             .align(Alignment.TopEnd)
                             .offset((-8).dp, 8.dp)
-                            .border(1.5.dp, Color(0xFF1E2D4A), CircleShape)
+                            .border(1.5.dp, colorScheme.primary, CircleShape)
                     )
                 }
             }
         }
 
-        // ── BALANCE CARD (gradient închis) ──
+        // ── BALANCE CARD ──
         Box(
             modifier = Modifier
                 .padding(horizontal = 20.dp)
@@ -132,7 +134,7 @@ fun DashboardScreen(
                 .clip(RoundedCornerShape(24.dp))
                 .background(
                     Brush.linearGradient(
-                        colors = listOf(Color(0xFF1A1A2E), Color(0xFF0F3460))
+                        colors = listOf(colorScheme.secondary, colorScheme.secondaryContainer)
                     )
                 )
                 .padding(22.dp)
@@ -142,7 +144,7 @@ fun DashboardScreen(
                     "AVAILABLE BALANCE",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF64748B),
+                    color = colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
                     letterSpacing = 1.5.sp
                 )
                 Spacer(Modifier.height(6.dp))
@@ -150,7 +152,7 @@ fun DashboardScreen(
                     "$5,000.00",
                     fontSize = 36.sp,
                     fontWeight = FontWeight.Black,
-                    color = Color.White,
+                    color = colorScheme.onSecondaryContainer,
                     letterSpacing = (-1).sp
                 )
                 Spacer(Modifier.height(16.dp))
@@ -163,16 +165,16 @@ fun DashboardScreen(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0x1A3DC45A))
+                            .background(colorScheme.surface.copy(alpha = 0.3f))
                             .padding(12.dp)
                     ) {
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("↑ ", color = GreenAccent, fontWeight = FontWeight.Black, fontSize = 12.sp)
-                                Text("INCOME", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFF94A3B8), letterSpacing = 1.sp)
+                                Text("↑ ", color = SuccessGreen, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                                Text("INCOME", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSecondaryContainer.copy(alpha = 0.6f), letterSpacing = 1.sp)
                             }
                             Spacer(Modifier.height(4.dp))
-                            Text("+$5,000", fontSize = 16.sp, fontWeight = FontWeight.Black, color = GreenAccent)
+                            Text("+$5,000", fontSize = 16.sp, fontWeight = FontWeight.Black, color = SuccessGreen)
                         }
                     }
                     // Expenses
@@ -180,16 +182,16 @@ fun DashboardScreen(
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0x1AEF4444))
+                            .background(colorScheme.surface.copy(alpha = 0.3f))
                             .padding(12.dp)
                     ) {
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("↓ ", color = Color(0xFFEF4444), fontWeight = FontWeight.Black, fontSize = 12.sp)
-                                Text("EXPENSES", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFF94A3B8), letterSpacing = 1.sp)
+                                Text("↓ ", color = colorScheme.error, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                                Text("EXPENSES", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSecondaryContainer.copy(alpha = 0.6f), letterSpacing = 1.sp)
                             }
                             Spacer(Modifier.height(4.dp))
-                            Text("−$300", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color(0xFFEF4444))
+                            Text("−$300", fontSize = 16.sp, fontWeight = FontWeight.Black, color = colorScheme.error)
                         }
                     }
                 }
@@ -207,12 +209,12 @@ fun DashboardScreen(
                 .height(52.dp),
             shape = RoundedCornerShape(50.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF1A1A2E)
+                containerColor = colorScheme.primary
             ),
             elevation = ButtonDefaults.buttonElevation(4.dp)
         ) {
-            Text("＋ ", fontSize = 16.sp, color = GreenAccent, fontWeight = FontWeight.Black)
-            Text("Set Monthly Budget", fontSize = 15.sp, fontWeight = FontWeight.Black, color = Color.White)
+            Text("＋ ", fontSize = 16.sp, color = colorScheme.onPrimary, fontWeight = FontWeight.Black)
+            Text("Set Monthly Budget", fontSize = 15.sp, fontWeight = FontWeight.Black, color = colorScheme.onPrimary)
         }
 
         Spacer(Modifier.height(24.dp))
@@ -224,12 +226,12 @@ fun DashboardScreen(
                 .padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Categories", fontSize = 17.sp, fontWeight = FontWeight.Black, color = Color(0xFF1A1A2E))
+            Text("Categories", fontSize = 17.sp, fontWeight = FontWeight.Black, color = colorScheme.onBackground)
             Spacer(Modifier.weight(1f))
             Text(
                 "See all →",
                 fontSize = 13.sp, fontWeight = FontWeight.Bold,
-                color = GreenAccent,
+                color = colorScheme.primary,
                 modifier = Modifier.clickable { }
             )
         }
@@ -245,10 +247,10 @@ fun DashboardScreen(
                 Column(
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))
-                        .background(if (isSelected) Color(0xFF1A1A2E) else Color.White)
+                        .background(if (isSelected) colorScheme.primary else colorScheme.surfaceVariant)
                         .border(
                             2.dp,
-                            if (isSelected) Color(0xFF1A1A2E) else Color(0xFFE2E8F0),
+                            if (isSelected) colorScheme.primary else colorScheme.outline,
                             RoundedCornerShape(16.dp)
                         )
                         .clickable { selectedCategory = label }
@@ -261,7 +263,7 @@ fun DashboardScreen(
                         label,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isSelected) Color.White else Color(0xFF64748B)
+                        color = if (isSelected) colorScheme.onPrimary else colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -276,12 +278,12 @@ fun DashboardScreen(
                 .padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Recent Transactions", fontSize = 17.sp, fontWeight = FontWeight.Black, color = Color(0xFF1A1A2E))
+            Text("Recent Transactions", fontSize = 17.sp, fontWeight = FontWeight.Black, color = colorScheme.onBackground)
             Spacer(Modifier.weight(1f))
             Text(
                 "All →",
                 fontSize = 13.sp, fontWeight = FontWeight.Bold,
-                color = GreenAccent,
+                color = colorScheme.primary,
                 modifier = Modifier.clickable { }
             )
         }
@@ -305,6 +307,7 @@ fun ImprovedTransactionItem(name: String, date: String, amount: Float) {
         name.contains("Auchan") || name.contains("Kaufland") -> "🛒"
         else -> "💸"
     }
+    val colorScheme = MaterialTheme.colorScheme
 
     Row(
         modifier = Modifier
@@ -312,7 +315,7 @@ fun ImprovedTransactionItem(name: String, date: String, amount: Float) {
             .fillMaxWidth()
             .shadow(4.dp, RoundedCornerShape(18.dp))
             .clip(RoundedCornerShape(18.dp))
-            .background(Color.White)
+            .background(colorScheme.surface)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -321,7 +324,7 @@ fun ImprovedTransactionItem(name: String, date: String, amount: Float) {
             modifier = Modifier
                 .size(46.dp)
                 .clip(RoundedCornerShape(14.dp))
-                .background(if (isPositive) Color(0xFFE8F8EE) else Color(0xFFFEF2F2)),
+                .background(if (isPositive) SuccessGreen.copy(alpha = 0.1f) else colorScheme.error.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
             Text(emoji, fontSize = 20.sp)
@@ -330,22 +333,23 @@ fun ImprovedTransactionItem(name: String, date: String, amount: Float) {
         Spacer(Modifier.width(14.dp))
 
         Column(Modifier.weight(1f)) {
-            Text(name, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A2E))
-            Text(date, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Color(0xFF94A3B8))
+            Text(name, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSurface)
+            Text(date, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = colorScheme.onSurfaceVariant)
         }
 
         // Amount badge
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(10.dp))
-                .background(if (isPositive) Color(0xFFE8F8EE) else Color(0xFFFEF2F2))
+                .background(if (isPositive) SuccessGreen.copy(alpha = 0.1f) else colorScheme.error.copy(alpha = 0.1f))
                 .padding(horizontal = 10.dp, vertical = 5.dp)
         ) {
+            val amountColor = if (isPositive) SuccessGreen else colorScheme.error
             Text(
                 text = if (isPositive) "+${amount.toInt()}" else "${amount.toInt()}",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Black,
-                color = if (isPositive) Color(0xFF16A34A) else Color(0xFFDC2626)
+                color = amountColor
             )
         }
     }

@@ -15,22 +15,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.spendsmart.ui.theme.*
 
 @Composable
-fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
+fun SettingsScreen(
+    onBack: () -> Unit, 
+    onLogout: () -> Unit,
+    isDarkMode: Boolean,
+    onDarkModeChange: (Boolean) -> Unit
+) {
 
     var fingerprintEnabled    by remember { mutableStateOf(true) }
     var pushNotifications     by remember { mutableStateOf(true) }
     var budgetAlert           by remember { mutableStateOf(true) }
-    var darkMode              by remember { mutableStateOf(false) }
+
+    var showChangePasswordDialog by remember { mutableStateOf(false) }
+    var showEditProfileDialog by remember { mutableStateOf(false) }
+    
+    val colorScheme = MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(GrayLight)
+            .background(colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(20.dp)
     ) {
@@ -41,11 +51,11 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
                 modifier = Modifier
                     .size(40.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(GreenAccent),
+                    .background(colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) { Text("💰", fontSize = 18.sp) }
             Spacer(Modifier.width(10.dp))
-            Text("SpendSmart", fontWeight = FontWeight.Black, fontSize = 16.sp)
+            Text("SpendSmart", fontWeight = FontWeight.Black, fontSize = 16.sp, color = colorScheme.onBackground)
         }
 
         Spacer(Modifier.height(16.dp))
@@ -54,10 +64,10 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(50.dp))
-                .background(Black)
+                .background(colorScheme.primary)
                 .padding(horizontal = 20.dp, vertical = 10.dp)
         ) {
-            Text("Settings", fontSize = 15.sp, fontWeight = FontWeight.Black, color = White)
+            Text("Settings", fontSize = 15.sp, fontWeight = FontWeight.Black, color = colorScheme.onPrimary)
         }
 
         Spacer(Modifier.height(20.dp))
@@ -67,9 +77,9 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(18.dp),
-            colors = CardDefaults.cardColors(containerColor = White),
-            border = CardDefaults.outlinedCardBorder().copy(width = 2.dp),
-            elevation = CardDefaults.cardElevation(0.dp)
+            colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+            border = CardDefaults.outlinedCardBorder().copy(width = 1.dp),
+            elevation = CardDefaults.cardElevation(2.dp)
         ) {
             Row(
                 Modifier.padding(16.dp),
@@ -80,26 +90,26 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
                     modifier = Modifier
                         .size(48.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(GreenLight)
-                        .border(2.dp, Black, RoundedCornerShape(14.dp)),
+                        .background(colorScheme.secondaryContainer)
+                        .border(1.dp, colorScheme.outline, RoundedCornerShape(14.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("AJ", fontSize = 14.sp, fontWeight = FontWeight.Black, color = Black)
+                    Text("AJ", fontSize = 14.sp, fontWeight = FontWeight.Black, color = colorScheme.onSecondaryContainer)
                 }
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text("Andrew Johnson", fontSize = 15.sp, fontWeight = FontWeight.Black, color = Black)
-                    Text("andrew@email.com", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextSecondary)
+                    Text("Andrew Johnson", fontSize = 15.sp, fontWeight = FontWeight.Black, color = colorScheme.onSurface)
+                    Text("andrew@email.com", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSurfaceVariant)
                 }
                 // Edit button
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(50.dp))
-                        .background(Black)
+                        .background(colorScheme.primary)
                         .padding(horizontal = 14.dp, vertical = 7.dp)
-                        .clickable { }
+                        .clickable { showEditProfileDialog = true }
                 ) {
-                    Text("Edit", fontSize = 13.sp, fontWeight = FontWeight.Black, color = White)
+                    Text("Edit", fontSize = 13.sp, fontWeight = FontWeight.Black, color = colorScheme.onPrimary)
                 }
             }
         }
@@ -109,8 +119,8 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
         // ── SECURITY ──
         SectionTitle("Security")
         SettingsGroup {
-            SettingsRowArrow(icon = "🔑", title = "Change Password", onClick = {})
-            HorizontalDivider(color = GrayBorder, thickness = 1.dp)
+            SettingsRowArrow(icon = "🔑", title = "Change Password", onClick = { showChangePasswordDialog = true })
+            HorizontalDivider(color = colorScheme.outlineVariant, thickness = 1.dp)
             SettingsRowToggle(
                 icon = "🫆",
                 title = "Fingerprint Login",
@@ -132,7 +142,7 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
                 checked = pushNotifications,
                 onCheckedChange = { pushNotifications = it }
             )
-            HorizontalDivider(color = GrayBorder, thickness = 1.dp)
+            HorizontalDivider(color = colorScheme.outlineVariant, thickness = 1.dp)
             SettingsRowToggle(
                 icon = "⚠️",
                 title = "Budget Alert (80%)",
@@ -148,14 +158,14 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
         SectionTitle("Preferences")
         SettingsGroup {
             SettingsRowBadge(icon = "💱", title = "Currency", badge = "USD")
-            HorizontalDivider(color = GrayBorder, thickness = 1.dp)
+            HorizontalDivider(color = colorScheme.outlineVariant, thickness = 1.dp)
             SettingsRowBadge(icon = "🌍", title = "Language", badge = "EN")
-            HorizontalDivider(color = GrayBorder, thickness = 1.dp)
+            HorizontalDivider(color = colorScheme.outlineVariant, thickness = 1.dp)
             SettingsRowToggle(
                 icon = "🌙",
                 title = "Dark Mode",
-                checked = darkMode,
-                onCheckedChange = { darkMode = it }
+                checked = isDarkMode,
+                onCheckedChange = onDarkModeChange
             )
         }
 
@@ -168,12 +178,92 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
                 .fillMaxWidth()
                 .height(54.dp),
             shape = RoundedCornerShape(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Black)
+            colors = ButtonDefaults.buttonColors(containerColor = colorScheme.errorContainer, contentColor = colorScheme.onErrorContainer)
         ) {
-            Text("Log Out", fontSize = 16.sp, fontWeight = FontWeight.Black, color = White)
+            Text("Log Out", fontSize = 16.sp, fontWeight = FontWeight.Black)
         }
 
         Spacer(Modifier.height(24.dp))
+    }
+
+    // ── DIALOGS ──
+
+    if (showChangePasswordDialog) {
+        AlertDialog(
+            onDismissRequest = { showChangePasswordDialog = false },
+            title = { Text("Change Password", fontWeight = FontWeight.Black) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    var oldPass by remember { mutableStateOf("") }
+                    var newPass by remember { mutableStateOf("") }
+
+                    OutlinedTextField(
+                        value = oldPass,
+                        onValueChange = { oldPass = it },
+                        label = { Text("Old Password") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = newPass,
+                        onValueChange = { newPass = it },
+                        label = { Text("New Password") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(onClick = { showChangePasswordDialog = false }) {
+                    Text("Update")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showChangePasswordDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if (showEditProfileDialog) {
+        AlertDialog(
+            onDismissRequest = { showEditProfileDialog = false },
+            title = { Text("Edit Profile", fontWeight = FontWeight.Black) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    var name by remember { mutableStateOf("Andrew Johnson") }
+                    var email by remember { mutableStateOf("andrew@email.com") }
+
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text("Full Name") },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text("Email Address") },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(onClick = { showEditProfileDialog = false }) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditProfileDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
@@ -183,7 +273,7 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
 fun SectionTitle(text: String) {
     Text(
         text,
-        fontSize = 16.sp, fontWeight = FontWeight.Black, color = Black,
+        fontSize = 16.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onBackground,
         modifier = Modifier.padding(bottom = 8.dp)
     )
 }
@@ -193,9 +283,9 @@ fun SettingsGroup(content: @Composable ColumnScope.() -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = White),
-        border = CardDefaults.outlinedCardBorder().copy(width = 2.dp),
-        elevation = CardDefaults.cardElevation(0.dp)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = CardDefaults.outlinedCardBorder().copy(width = 1.dp),
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column { content() }
     }
@@ -208,11 +298,11 @@ fun SettingsRowArrow(icon: String, title: String, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+        verticalAlignment = Alignment.CenterVertically) {
+        val colorScheme = MaterialTheme.colorScheme
         Text(icon, fontSize = 18.sp, modifier = Modifier.width(28.dp))
-        Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Black, modifier = Modifier.weight(1f))
-        Icon(Icons.Default.KeyboardArrowRight, null, tint = GrayBorder)
+        Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSurface, modifier = Modifier.weight(1f))
+        Icon(Icons.Default.KeyboardArrowRight, null, tint = colorScheme.onSurfaceVariant)
     }
 }
 
@@ -224,6 +314,7 @@ fun SettingsRowToggle(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -232,27 +323,21 @@ fun SettingsRowToggle(
     ) {
         Text(icon, fontSize = 18.sp, modifier = Modifier.width(28.dp))
         Column(Modifier.weight(1f)) {
-            Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Black)
+            Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSurface)
             if (subtitle.isNotEmpty()) {
-                Text(subtitle, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextSecondary)
+                Text(subtitle, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSurfaceVariant)
             }
         }
         Switch(
             checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = White,
-                checkedTrackColor = Black,
-                uncheckedThumbColor = White,
-                uncheckedTrackColor = GrayBorder,
-                uncheckedBorderColor = GrayBorder
-            )
+            onCheckedChange = onCheckedChange
         )
     }
 }
 
 @Composable
 fun SettingsRowBadge(icon: String, title: String, badge: String) {
+    val colorScheme = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -261,13 +346,13 @@ fun SettingsRowBadge(icon: String, title: String, badge: String) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(icon, fontSize = 18.sp, modifier = Modifier.width(28.dp))
-        Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Black, modifier = Modifier.weight(1f))
+        Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSurface, modifier = Modifier.weight(1f))
         Box(
             modifier = Modifier
-                .border(2.dp, Black, RoundedCornerShape(8.dp))
+                .border(1.dp, colorScheme.outline, RoundedCornerShape(8.dp))
                 .padding(horizontal = 10.dp, vertical = 3.dp)
         ) {
-            Text(badge, fontSize = 12.sp, fontWeight = FontWeight.Black, color = Black)
+            Text(badge, fontSize = 12.sp, fontWeight = FontWeight.Black, color = colorScheme.onSurface)
         }
     }
 }

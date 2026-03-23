@@ -18,7 +18,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.spendsmart.ui.theme.*
 
 @Composable
 fun AddTransactionScreen(onBack: () -> Unit, onSave: () -> Unit) {
@@ -31,11 +30,12 @@ fun AddTransactionScreen(onBack: () -> Unit, onSave: () -> Unit) {
     var recurringReminder by remember { mutableStateOf("") }
 
     val categories = listOf("Food", "Transport", "Health")
+    val colorScheme = MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(GrayLight)
+            .background(colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(20.dp)
     ) {
@@ -46,11 +46,11 @@ fun AddTransactionScreen(onBack: () -> Unit, onSave: () -> Unit) {
                 modifier = Modifier
                     .size(40.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(GreenAccent),
+                    .background(colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) { Text("💰", fontSize = 18.sp) }
             Spacer(Modifier.width(10.dp))
-            Text("SpendSmart", fontWeight = FontWeight.Black, fontSize = 16.sp)
+            Text("SpendSmart", fontWeight = FontWeight.Black, fontSize = 16.sp, color = colorScheme.onBackground)
         }
 
         Spacer(Modifier.height(16.dp))
@@ -59,10 +59,10 @@ fun AddTransactionScreen(onBack: () -> Unit, onSave: () -> Unit) {
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(50.dp))
-                .background(Black)
+                .background(colorScheme.primary)
                 .padding(horizontal = 20.dp, vertical = 10.dp)
         ) {
-            Text("Add Transaction", fontSize = 15.sp, fontWeight = FontWeight.Black, color = White)
+            Text("Add Transaction", fontSize = 15.sp, fontWeight = FontWeight.Black, color = colorScheme.onPrimary)
         }
 
         Spacer(Modifier.height(20.dp))
@@ -72,15 +72,15 @@ fun AddTransactionScreen(onBack: () -> Unit, onSave: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(50.dp))
-                .border(2.5.dp, Black, RoundedCornerShape(50.dp))
-                .background(White)
+                .border(1.dp, colorScheme.outline, RoundedCornerShape(50.dp))
+                .background(colorScheme.surface)
         ) {
             listOf(true to "Expense", false to "Income").forEach { (isExp, label) ->
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(50.dp))
-                        .background(if (isExpense == isExp) Black else White)
+                        .background(if (isExpense == isExp) colorScheme.primary else colorScheme.surface)
                         .clickable { isExpense = isExp }
                         .padding(vertical = 13.dp),
                     contentAlignment = Alignment.Center
@@ -89,7 +89,7 @@ fun AddTransactionScreen(onBack: () -> Unit, onSave: () -> Unit) {
                         label,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Black,
-                        color = if (isExpense == isExp) White else Black
+                        color = if (isExpense == isExp) colorScheme.onPrimary else colorScheme.onSurface
                     )
                 }
             }
@@ -102,15 +102,15 @@ fun AddTransactionScreen(onBack: () -> Unit, onSave: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .background(White)
-                .border(2.dp, GrayBorder, RoundedCornerShape(20.dp))
+                .background(colorScheme.surface)
+                .border(1.dp, colorScheme.outline, RoundedCornerShape(20.dp))
                 .padding(vertical = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 "ENTER AMOUNT",
                 fontSize = 11.sp, fontWeight = FontWeight.Bold,
-                color = TextSecondary, letterSpacing = 1.sp
+                color = colorScheme.onSurfaceVariant, letterSpacing = 1.sp
             )
             Spacer(Modifier.height(6.dp))
             OutlinedTextField(
@@ -123,7 +123,7 @@ fun AddTransactionScreen(onBack: () -> Unit, onSave: () -> Unit) {
                     fontSize = 36.sp,
                     fontWeight = FontWeight.Black,
                     textAlign = TextAlign.Center,
-                    color = Black
+                    color = colorScheme.onSurface
                 ),
                 placeholder = {
                     Text(
@@ -131,17 +131,17 @@ fun AddTransactionScreen(onBack: () -> Unit, onSave: () -> Unit) {
                         fontSize = 36.sp,
                         fontWeight = FontWeight.Black,
                         textAlign = TextAlign.Center,
-                        color = GrayBorder,
+                        color = colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Black,
-                    unfocusedBorderColor = GrayBorder,
-                    focusedContainerColor = White,
-                    unfocusedContainerColor = White
+                    focusedBorderColor = colorScheme.primary,
+                    unfocusedBorderColor = colorScheme.outline,
+                    focusedContainerColor = colorScheme.surface,
+                    unfocusedContainerColor = colorScheme.surface
                 )
             )
         }
@@ -155,15 +155,15 @@ fun AddTransactionScreen(onBack: () -> Unit, onSave: () -> Unit) {
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(50.dp))
-                        .background(if (selected) Black else White)
-                        .border(2.dp, Black, RoundedCornerShape(50.dp))
+                        .background(if (selected) colorScheme.primary else colorScheme.surface)
+                        .border(1.dp, if (selected) colorScheme.primary else colorScheme.outline, RoundedCornerShape(50.dp))
                         .clickable { selectedCategory = cat }
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     Text(
                         cat,
                         fontSize = 13.sp, fontWeight = FontWeight.Bold,
-                        color = if (selected) White else Black
+                        color = if (selected) colorScheme.onPrimary else colorScheme.onSurface
                     )
                 }
             }
@@ -172,60 +172,54 @@ fun AddTransactionScreen(onBack: () -> Unit, onSave: () -> Unit) {
         Spacer(Modifier.height(20.dp))
 
         // ── DESCRIPTION ──
-        Text("Description", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Black)
+        Text("Description", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = colorScheme.onSurface)
         Spacer(Modifier.height(6.dp))
         OutlinedTextField(
             value = description,
             onValueChange = { description = it },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("e.g. Grocery shopping", color = TextSecondary) },
+            placeholder = { Text("e.g. Grocery shopping") },
             shape = RoundedCornerShape(14.dp),
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Black,
-                unfocusedBorderColor = Black,
-                focusedContainerColor = White,
-                unfocusedContainerColor = White
+                focusedBorderColor = colorScheme.primary,
+                unfocusedBorderColor = colorScheme.outline
             )
         )
 
         Spacer(Modifier.height(14.dp))
 
         // ── DATE ──
-        Text("Date", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Black)
+        Text("Date", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = colorScheme.onSurface)
         Spacer(Modifier.height(6.dp))
         OutlinedTextField(
             value = date,
             onValueChange = { date = it },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Select date", color = TextSecondary) },
+            placeholder = { Text("Select date") },
             shape = RoundedCornerShape(14.dp),
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Black,
-                unfocusedBorderColor = Black,
-                focusedContainerColor = White,
-                unfocusedContainerColor = White
+                focusedBorderColor = colorScheme.primary,
+                unfocusedBorderColor = colorScheme.outline
             )
         )
 
         Spacer(Modifier.height(14.dp))
 
         // ── RECURRING REMINDER ──
-        Text("Recurring Reminder", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Black)
+        Text("Recurring Reminder", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = colorScheme.onSurface)
         Spacer(Modifier.height(6.dp))
         OutlinedTextField(
             value = recurringReminder,
             onValueChange = { recurringReminder = it },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("No repeat", color = TextSecondary) },
+            placeholder = { Text("No repeat") },
             shape = RoundedCornerShape(14.dp),
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Black,
-                unfocusedBorderColor = Black,
-                focusedContainerColor = White,
-                unfocusedContainerColor = White
+                focusedBorderColor = colorScheme.primary,
+                unfocusedBorderColor = colorScheme.outline
             )
         )
 
@@ -238,9 +232,9 @@ fun AddTransactionScreen(onBack: () -> Unit, onSave: () -> Unit) {
                 .fillMaxWidth()
                 .height(54.dp),
             shape = RoundedCornerShape(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Black)
+            colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary)
         ) {
-            Text("Save Transaction", fontSize = 16.sp, fontWeight = FontWeight.Black, color = White)
+            Text("Save Transaction", fontSize = 16.sp, fontWeight = FontWeight.Black, color = colorScheme.onPrimary)
         }
 
         Spacer(Modifier.height(24.dp))
