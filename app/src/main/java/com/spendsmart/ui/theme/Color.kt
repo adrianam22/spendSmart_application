@@ -33,8 +33,6 @@ val md_theme_dark_surface = Color(0xFF191C1A)
 val md_theme_dark_onSurface = Color(0xFFE1E3DF)
 val md_theme_dark_error = Color(0xFFFFB4AB)
 val md_theme_dark_onError = Color(0xFF690005)
-
-// Functional colors that can be used directly or mapped in the theme
 val SuccessGreen = Color(0xFF3DC45A)
 val WarningOrange = Color(0xFFCC7700)
 val ErrorRed = Color(0xFFCC0000)

@@ -149,7 +149,7 @@ fun DashboardScreen(
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "$5,000.00",
+                    "$4.700",
                     fontSize = 36.sp,
                     fontWeight = FontWeight.Black,
                     color = colorScheme.onSecondaryContainer,
@@ -174,7 +174,7 @@ fun DashboardScreen(
                                 Text("INCOME", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSecondaryContainer.copy(alpha = 0.6f), letterSpacing = 1.sp)
                             }
                             Spacer(Modifier.height(4.dp))
-                            Text("+$5,000", fontSize = 16.sp, fontWeight = FontWeight.Black, color = SuccessGreen)
+                            Text("+$5.000", fontSize = 16.sp, fontWeight = FontWeight.Black, color = SuccessGreen)
                         }
                     }
                     // Expenses

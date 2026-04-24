@@ -45,7 +45,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
 
         Spacer(Modifier.height(48.dp))
 
-        // ── APP LOGO ──
+        // app logo
         Box(
             modifier = Modifier
                 .size(80.dp)

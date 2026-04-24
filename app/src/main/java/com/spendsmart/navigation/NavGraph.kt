@@ -29,9 +29,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.spendsmart.ui.screens.*
 import com.spendsmart.ui.theme.SuccessGreen
 
-// ══════════════════════════════════════
 //  ROUTES
-// ══════════════════════════════════════
+
 object Routes {
     const val LOGIN           = "login"
     const val DASHBOARD       = "dashboard"
@@ -41,9 +40,7 @@ object Routes {
     const val SETTINGS        = "settings"
 }
 
-// ══════════════════════════════════════
 //  BOTTOM NAV ITEMS
-// ══════════════════════════════════════
 data class BottomNavItem(
     val route: String,
     val label: String,
@@ -59,9 +56,8 @@ val bottomNavItems = listOf(
 
 val pagesWithoutNav = listOf(Routes.LOGIN)
 
-// ══════════════════════════════════════
 //  MAIN SCAFFOLD + NAV GRAPH
-// ══════════════════════════════════════
+
 @Composable
 fun NavGraph(
     navController: NavHostController,
@@ -140,9 +136,7 @@ fun NavGraph(
     }
 }
 
-// ══════════════════════════════════════
 //  BOTTOM NAVIGATION BAR
-// ══════════════════════════════════════
 @Composable
 fun BottomNavBar(navController: NavHostController) {
 
