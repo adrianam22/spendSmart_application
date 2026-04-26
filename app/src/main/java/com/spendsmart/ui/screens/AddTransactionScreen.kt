@@ -1,242 +1,205 @@
 package com.spendsmart.ui.screens
 
+import android.app.DatePickerDialog
+import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.spendsmart.ui.viewmodel.TransactionViewModel
+import java.text.SimpleDateFormat
+import java.util.*
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun AddTransactionScreen(onBack: () -> Unit, onSave: () -> Unit) {
-
-    var isExpense         by remember { mutableStateOf(true) }
-    var amount            by remember { mutableStateOf("") }
-    var selectedCategory  by remember { mutableStateOf("Food") }
-    var description       by remember { mutableStateOf("") }
-    var date              by remember { mutableStateOf("March 21, 2026") }
-    var recurringReminder by remember { mutableStateOf("") }
-
-    val categories = listOf("Food", "Transport", "Health")
+fun AddTransactionScreen(
+    viewModel: TransactionViewModel,
+    onBack: () -> Unit,
+    onSave: () -> Unit
+) {
+    var isExpense by remember { mutableStateOf(true) }
+    var amount by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var selectedDate by remember { mutableStateOf(System.currentTimeMillis()) }
+    var recurringReminder by remember { mutableStateOf("Niciunul") }
+    
+    var expandedDropdown by remember { mutableStateOf(false) }
+    
+    val context = LocalContext.current
     val colorScheme = MaterialTheme.colorScheme
+    val calendar = Calendar.getInstance()
+
+    val expenseCategories = listOf(
+        Pair("🛒", "Food"), 
+        Pair("🚗", "Transport"), 
+        Pair("🏥", "Health"),
+        Pair("🎭", "Fun"),
+        Pair("🛍️", "Shopping"),
+        Pair("🧾", "Bills"),
+        Pair("🎓", "Education")
+    )
+    val incomeCategories = listOf(
+        Pair("💼", "Salary"), 
+        Pair("🎁", "Gift"), 
+        Pair("📈", "Investment"),
+        Pair("💻", "Freelance")
+    )
+    val currentCategories = if (isExpense) expenseCategories else incomeCategories
+    val recurringOptions = listOf("Niciunul", "Zilnic", "Săptămânal", "Lunar")
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colorScheme.background)
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp)
+        modifier = Modifier.fillMaxSize().background(colorScheme.background).verticalScroll(rememberScrollState()).padding(20.dp)
     ) {
-
-        // ── TOP BAR ──
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
-            ) { Text("💰", fontSize = 18.sp) }
-            Spacer(Modifier.width(10.dp))
-            Text("SpendSmart", fontWeight = FontWeight.Black, fontSize = 16.sp, color = colorScheme.onBackground)
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        // ── TITLE BADGE ──
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(50.dp))
-                .background(colorScheme.primary)
-                .padding(horizontal = 20.dp, vertical = 10.dp)
-        ) {
-            Text("Add Transaction", fontSize = 15.sp, fontWeight = FontWeight.Black, color = colorScheme.onPrimary)
-        }
-
+        Text("Add Transaction", fontWeight = FontWeight.Black, fontSize = 24.sp)
         Spacer(Modifier.height(20.dp))
 
-        // ── EXPENSE / INCOME TOGGLE ──
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(50.dp))
-                .border(1.dp, colorScheme.outline, RoundedCornerShape(50.dp))
-                .background(colorScheme.surface)
-        ) {
+        Row(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(50.dp)).background(colorScheme.surfaceVariant)) {
             listOf(true to "Expense", false to "Income").forEach { (isExp, label) ->
                 Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(50.dp))
-                        .background(if (isExpense == isExp) colorScheme.primary else colorScheme.surface)
-                        .clickable { isExpense = isExp }
-                        .padding(vertical = 13.dp),
+                    modifier = Modifier.weight(1f).clickable { 
+                        isExpense = isExp
+                        selectedCategory = "" 
+                    }.background(if (isExpense == isExp) colorScheme.primary else colorScheme.surfaceVariant).padding(vertical = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        label,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Black,
-                        color = if (isExpense == isExp) colorScheme.onPrimary else colorScheme.onSurface
-                    )
+                    Text(label, color = if (isExpense == isExp) colorScheme.onPrimary else colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
                 }
             }
-        }
-
-        Spacer(Modifier.height(20.dp))
-
-        // ── AMOUNT DISPLAY ──
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
-                .background(colorScheme.surface)
-                .border(1.dp, colorScheme.outline, RoundedCornerShape(20.dp))
-                .padding(vertical = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                "ENTER AMOUNT",
-                fontSize = 11.sp, fontWeight = FontWeight.Bold,
-                color = colorScheme.onSurfaceVariant, letterSpacing = 1.sp
-            )
-            Spacer(Modifier.height(6.dp))
-            OutlinedTextField(
-                value = amount,
-                onValueChange = { amount = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                textStyle = LocalTextStyle.current.copy(
-                    fontSize = 36.sp,
-                    fontWeight = FontWeight.Black,
-                    textAlign = TextAlign.Center,
-                    color = colorScheme.onSurface
-                ),
-                placeholder = {
-                    Text(
-                        "$0",
-                        fontSize = 36.sp,
-                        fontWeight = FontWeight.Black,
-                        textAlign = TextAlign.Center,
-                        color = colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = colorScheme.primary,
-                    unfocusedBorderColor = colorScheme.outline,
-                    focusedContainerColor = colorScheme.surface,
-                    unfocusedContainerColor = colorScheme.surface
-                )
-            )
-        }
-
-        Spacer(Modifier.height(20.dp))
-
-        // ── CATEGORIES ──
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            categories.forEach { cat ->
-                val selected = cat == selectedCategory
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50.dp))
-                        .background(if (selected) colorScheme.primary else colorScheme.surface)
-                        .border(1.dp, if (selected) colorScheme.primary else colorScheme.outline, RoundedCornerShape(50.dp))
-                        .clickable { selectedCategory = cat }
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text(
-                        cat,
-                        fontSize = 13.sp, fontWeight = FontWeight.Bold,
-                        color = if (selected) colorScheme.onPrimary else colorScheme.onSurface
-                    )
-                }
-            }
-        }
-
-        Spacer(Modifier.height(20.dp))
-
-        // ── DESCRIPTION ──
-        Text("Description", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = colorScheme.onSurface)
-        Spacer(Modifier.height(6.dp))
-        OutlinedTextField(
-            value = description,
-            onValueChange = { description = it },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("e.g. Grocery shopping") },
-            shape = RoundedCornerShape(14.dp),
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = colorScheme.primary,
-                unfocusedBorderColor = colorScheme.outline
-            )
-        )
-
-        Spacer(Modifier.height(14.dp))
-
-        // ── DATE ──
-        Text("Date", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = colorScheme.onSurface)
-        Spacer(Modifier.height(6.dp))
-        OutlinedTextField(
-            value = date,
-            onValueChange = { date = it },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Select date") },
-            shape = RoundedCornerShape(14.dp),
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = colorScheme.primary,
-                unfocusedBorderColor = colorScheme.outline
-            )
-        )
-
-        Spacer(Modifier.height(14.dp))
-
-        // ── RECURRING REMINDER ──
-        Text("Recurring Reminder", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = colorScheme.onSurface)
-        Spacer(Modifier.height(6.dp))
-        OutlinedTextField(
-            value = recurringReminder,
-            onValueChange = { recurringReminder = it },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("No repeat") },
-            shape = RoundedCornerShape(14.dp),
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = colorScheme.primary,
-                unfocusedBorderColor = colorScheme.outline
-            )
-        )
-
-        Spacer(Modifier.height(28.dp))
-
-        // ── SAVE BUTTON ──
-        Button(
-            onClick = onSave,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(54.dp),
-            shape = RoundedCornerShape(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary)
-        ) {
-            Text("Save Transaction", fontSize = 16.sp, fontWeight = FontWeight.Black, color = colorScheme.onPrimary)
         }
 
         Spacer(Modifier.height(24.dp))
+
+        OutlinedTextField(
+            value = amount, onValueChange = { if (it.all { char -> char.isDigit() || char == '.' }) amount = it },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Amount ($)") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 28.sp, fontWeight = FontWeight.Black),
+            shape = RoundedCornerShape(16.dp)
+        )
+
+        Spacer(Modifier.height(20.dp))
+
+        Text("Select Category", fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(8.dp))
+        
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            currentCategories.forEach { (emoji, label) ->
+                val selected = selectedCategory == label
+                FilterChip(
+                    selected = selected,
+                    onClick = { selectedCategory = label },
+                    label = { Text(label) },
+                    leadingIcon = { Text(emoji) }
+                )
+            }
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        OutlinedTextField(
+            value = description, onValueChange = { description = it },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Description (Optional)") },
+            shape = RoundedCornerShape(16.dp)
+        )
+
+        Spacer(Modifier.height(20.dp))
+
+        val dateStr = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(selectedDate))
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = dateStr, onValueChange = {},
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Date") },
+                readOnly = true,
+                trailingIcon = { Icon(Icons.Default.DateRange, null) },
+                shape = RoundedCornerShape(16.dp),
+                enabled = false, 
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledTextColor = colorScheme.onSurface,
+                    disabledBorderColor = colorScheme.outline,
+                    disabledLabelColor = colorScheme.onSurfaceVariant,
+                    disabledTrailingIconColor = colorScheme.onSurfaceVariant
+                )
+            )
+            Box(Modifier.matchParentSize().clickable {
+                DatePickerDialog(context, { _, y, m, d ->
+                    calendar.set(y, m, d)
+                    selectedDate = calendar.timeInMillis
+                }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
+            })
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        Box {
+            OutlinedTextField(
+                value = recurringReminder, onValueChange = {},
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Recurring Reminder") },
+                readOnly = true,
+                trailingIcon = { IconButton(onClick = { expandedDropdown = true }) { Icon(Icons.Default.ArrowDropDown, null) } },
+                shape = RoundedCornerShape(16.dp)
+            )
+            DropdownMenu(expanded = expandedDropdown, onDismissRequest = { expandedDropdown = false }) {
+                recurringOptions.forEach { option ->
+                    DropdownMenuItem(text = { Text(option) }, onClick = {
+                        recurringReminder = option
+                        expandedDropdown = false
+                    })
+                }
+            }
+        }
+
+        Spacer(Modifier.height(32.dp))
+
+        Button(
+            onClick = {
+                val amt = amount.toDoubleOrNull() ?: 0.0
+                if (amt <= 0) {
+                    Toast.makeText(context, "Please enter a valid amount", Toast.LENGTH_SHORT).show()
+                } else if (selectedCategory.isEmpty()) {
+                    Toast.makeText(context, "Please select a category", Toast.LENGTH_SHORT).show()
+                } else {
+                    viewModel.addTransaction(
+                        amount = amt,
+                        type = if (isExpense) "expense" else "income",
+                        category = selectedCategory,
+                        desc = description.ifEmpty { selectedCategory },
+                        date = selectedDate,
+                        recurring = recurringReminder
+                    )
+                    Toast.makeText(context, "Transaction saved!", Toast.LENGTH_SHORT).show()
+                    onSave()
+                }
+            },
+            modifier = Modifier.fillMaxWidth().height(54.dp),
+            shape = RoundedCornerShape(50.dp)
+        ) {
+            Text("Save Transaction", fontWeight = FontWeight.Black, fontSize = 16.sp)
+        }
     }
 }

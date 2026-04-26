@@ -1,14 +1,16 @@
 package com.spendsmart.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,296 +20,249 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.spendsmart.R
+import com.spendsmart.data.model.Transaction
+import com.spendsmart.ui.viewmodel.TransactionViewModel
+import com.spendsmart.ui.viewmodel.BudgetViewModel
 import com.spendsmart.ui.theme.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun DashboardScreen(
+    transactionViewModel: TransactionViewModel,
+    budgetViewModel: BudgetViewModel,
     onSetBudget: () -> Unit,
     onAddTransaction: () -> Unit,
     onSettings: () -> Unit
 ) {
-    var selectedCategory by remember { mutableStateOf("Food") }
-    val categories = listOf(
-        Pair("🛒", "Food"),
-        Pair("🚗", "Transport"),
-        Pair("🏥", "Health"),
-        Pair("🎮", "Fun")
-    )
-
-    val transactions = listOf(
-        Triple("Auchan",       "Food · Feb 28",  -200f),
-        Triple("Kaufland",     "Food · Feb 27",  -100f),
-        Triple("March Salary", "Income · Mar 1", +5000f),
-    )
-
+    val transactions by transactionViewModel.filteredTransactions.collectAsState()
+    val totalBalance by transactionViewModel.availableBalance.collectAsState()
+    val monthlyInc by transactionViewModel.monthlyIncome.collectAsState()
+    val monthlyExp by transactionViewModel.monthlyExpense.collectAsState()
+    
+    val selectedCategory by transactionViewModel.selectedCategory.collectAsState()
+    val budget by budgetViewModel.currentBudget.collectAsState()
+    val spentThisMonth by budgetViewModel.spentThisMonth.collectAsState()
+    
+    var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
+    var showFilterMenu by remember { mutableStateOf(false) }
+    
+    val context = LocalContext.current
     val colorScheme = MaterialTheme.colorScheme
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colorScheme.background)
-            .verticalScroll(rememberScrollState())
-    ) {
+    // Declanșăm verificarea alertei de sistem
+    LaunchedEffect(spentThisMonth, budget) {
+        budgetViewModel.checkBudgetAlert(context)
+    }
 
-        // ── HEADER ──
-        Box(
+    val allCategories = listOf(
+        "All" to R.string.category_all to "📱",
+        "Food" to R.string.category_food to "🛒",
+        "Transport" to R.string.category_transport to "🚗",
+        "Health" to R.string.category_health to "🏥",
+        "Fun" to R.string.category_fun to "🎭",
+        "Shopping" to R.string.category_shopping to "🛍️",
+        "Bills" to R.string.category_bills to "🧾",
+        "Education" to R.string.category_education to "🎓",
+        "Salary" to R.string.category_salary to "💼",
+        "Gift" to R.string.category_gift to "🎁",
+        "Investment" to R.string.category_investment to "📈",
+        "Freelance" to R.string.category_freelance to "💻"
+    )
+
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddTransaction,
+                containerColor = colorScheme.primary,
+                contentColor = colorScheme.onPrimary,
+                shape = RoundedCornerShape(16.dp)
+            ) { Icon(Icons.Default.Add, stringResource(R.string.add_transaction)) }
+        }
+    ) { padding ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(colorScheme.primary, colorScheme.primaryContainer)
-                    )
-                )
-                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .fillMaxSize()
+                .padding(padding)
+                .background(colorScheme.background)
+                .verticalScroll(rememberScrollState())
         ) {
+            // HEADER
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Brush.verticalGradient(listOf(colorScheme.primary, colorScheme.primaryContainer)))
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("💰", fontSize = 24.sp)
+                    Spacer(Modifier.width(12.dp))
+                    Column {
+                        Text(stringResource(R.string.hello), fontSize = 12.sp, color = colorScheme.onPrimary.copy(alpha = 0.7f))
+                        Text(stringResource(R.string.app_name), fontSize = 18.sp, fontWeight = FontWeight.Black, color = colorScheme.onPrimary)
+                    }
+                    Spacer(Modifier.weight(1f))
+                    IconButton(onClick = onSettings) {
+                        Icon(Icons.Default.Notifications, null, tint = colorScheme.onPrimary)
+                    }
+                }
+            }
+
+            // BALANCE CARD
+            Card(
+                modifier = Modifier
+                    .padding(20.dp)
+                    .fillMaxWidth()
+                    .shadow(12.dp, RoundedCornerShape(24.dp)),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = colorScheme.secondaryContainer)
+            ) {
+                Column(Modifier.padding(22.dp)) {
+                    Text(stringResource(R.string.available_balance), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSecondaryContainer.copy(alpha = 0.7f))
+                    Text(
+                        text = String.format(Locale.US, "%,.2f RON", totalBalance),
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.Black,
+                        color = if (totalBalance > 0) Color(0xFF2E7D32) else colorScheme.error
+                    )
+                    
+                    Spacer(Modifier.height(16.dp))
+                    HorizontalDivider(color = colorScheme.onSecondaryContainer.copy(alpha = 0.1f), thickness = 1.dp)
+                    Spacer(Modifier.height(16.dp))
+
+                    Text(stringResource(R.string.this_month_label), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSecondaryContainer)
+                    Spacer(Modifier.height(8.dp))
+                    
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(
+                            text = String.format(Locale.US, "+%,.2f RON", monthlyInc),
+                            color = Color(0xFF2E7D32),
+                            fontWeight = FontWeight.Black,
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = String.format(Locale.US, "-%,.2f RON", monthlyExp),
+                            color = colorScheme.error,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 16.sp
+                        )
+                    }
+                    
+                    Text(
+                        text = SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(Date()),
+                        fontSize = 11.sp,
+                        color = colorScheme.onSecondaryContainer.copy(alpha = 0.6f),
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+            }
+
+            // BUDGET ALERT BANNER
+            val limit = budget?.totalLimit ?: 0.0
+            val progress = if (limit > 0) (spentThisMonth / limit).toFloat() else 0f
+            if (progress >= 0.8f) {
+                Surface(
+                    modifier = Modifier.padding(horizontal = 20.dp).fillMaxWidth(),
+                    color = colorScheme.errorContainer,
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(stringResource(R.string.budget_alert_message), color = colorScheme.onErrorContainer, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(12.dp))
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+
+            Button(
+                onClick = onSetBudget,
+                modifier = Modifier.padding(horizontal = 20.dp).fillMaxWidth().height(48.dp),
+                shape = RoundedCornerShape(50.dp)
+            ) { Text(stringResource(R.string.set_monthly_budget), fontWeight = FontWeight.Black) }
+
+            Spacer(Modifier.height(24.dp))
+
+            // FILTER MENU
             Row(
-                Modifier.fillMaxWidth(),
+                Modifier.padding(horizontal = 20.dp).fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Logo
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(colorScheme.onPrimary.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
-                ) { Text("💰", fontSize = 20.sp) }
-
-                Spacer(Modifier.width(12.dp))
-
-                Column {
-                    Text(
-                        "Hello,",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = colorScheme.onPrimary.copy(alpha = 0.7f)
-                    )
-                    Text(
-                        "SpendSmart",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Black,
-                        color = colorScheme.onPrimary
-                    )
-                }
-
-                Spacer(Modifier.weight(1f))
-
-                // Notif button
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(colorScheme.onPrimary.copy(alpha = 0.1f))
-                        .clickable { },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Notifications,
-                        null,
-                        tint = colorScheme.onPrimary,
-                        modifier = Modifier.size(22.dp)
-                    )
-                    // Red dot
-                    Box(
-                        modifier = Modifier
-                            .size(9.dp)
-                            .clip(CircleShape)
-                            .background(colorScheme.error)
-                            .align(Alignment.TopEnd)
-                            .offset((-8).dp, 8.dp)
-                            .border(1.5.dp, colorScheme.primary, CircleShape)
-                    )
-                }
-            }
-        }
-
-        // ── BALANCE CARD ──
-        Box(
-            modifier = Modifier
-                .padding(horizontal = 20.dp)
-                .padding(top = 20.dp)
-                .fillMaxWidth()
-                .shadow(12.dp, RoundedCornerShape(24.dp))
-                .clip(RoundedCornerShape(24.dp))
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(colorScheme.secondary, colorScheme.secondaryContainer)
-                    )
-                )
-                .padding(22.dp)
-        ) {
-            Column {
-                Text(
-                    "AVAILABLE BALANCE",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
-                    letterSpacing = 1.5.sp
-                )
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    "$4.700",
-                    fontSize = 36.sp,
-                    fontWeight = FontWeight.Black,
-                    color = colorScheme.onSecondaryContainer,
-                    letterSpacing = (-1).sp
-                )
-                Spacer(Modifier.height(16.dp))
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Income
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(colorScheme.surface.copy(alpha = 0.3f))
-                            .padding(12.dp)
-                    ) {
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("↑ ", color = SuccessGreen, fontWeight = FontWeight.Black, fontSize = 12.sp)
-                                Text("INCOME", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSecondaryContainer.copy(alpha = 0.6f), letterSpacing = 1.sp)
-                            }
-                            Spacer(Modifier.height(4.dp))
-                            Text("+$5.000", fontSize = 16.sp, fontWeight = FontWeight.Black, color = SuccessGreen)
-                        }
+                Text(stringResource(R.string.recent_activity), fontWeight = FontWeight.Black, fontSize = 18.sp, modifier = Modifier.weight(1f))
+                Box {
+                    IconButton(onClick = { showFilterMenu = true }) {
+                        Icon(Icons.Default.FilterList, "Filter")
                     }
-                    // Expenses
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(colorScheme.surface.copy(alpha = 0.3f))
-                            .padding(12.dp)
-                    ) {
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("↓ ", color = colorScheme.error, fontWeight = FontWeight.Black, fontSize = 12.sp)
-                                Text("EXPENSES", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSecondaryContainer.copy(alpha = 0.6f), letterSpacing = 1.sp)
-                            }
-                            Spacer(Modifier.height(4.dp))
-                            Text("−$300", fontSize = 16.sp, fontWeight = FontWeight.Black, color = colorScheme.error)
+                    DropdownMenu(expanded = showFilterMenu, onDismissRequest = { showFilterMenu = false }) {
+                        allCategories.forEach { categoryInfo ->
+                            val label = categoryInfo.first.first
+                            val resId = categoryInfo.first.second
+                            val emoji = categoryInfo.second
+                            DropdownMenuItem(
+                                text = { Text("$emoji " + stringResource(resId)) },
+                                onClick = {
+                                    transactionViewModel.selectCategory(label)
+                                    showFilterMenu = false
+                                },
+                                leadingIcon = if (selectedCategory == label) { { Icon(Icons.Default.Check, null) } } else null
+                            )
                         }
                     }
                 }
             }
-        }
 
-        Spacer(Modifier.height(16.dp))
-
-        // ── SET BUDGET BUTTON ──
-        Button(
-            onClick = onSetBudget,
-            modifier = Modifier
-                .padding(horizontal = 20.dp)
-                .fillMaxWidth()
-                .height(52.dp),
-            shape = RoundedCornerShape(50.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colorScheme.primary
-            ),
-            elevation = ButtonDefaults.buttonElevation(4.dp)
-        ) {
-            Text("＋ ", fontSize = 16.sp, color = colorScheme.onPrimary, fontWeight = FontWeight.Black)
-            Text("Set Monthly Budget", fontSize = 15.sp, fontWeight = FontWeight.Black, color = colorScheme.onPrimary)
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // ── CATEGORIES ──
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Categories", fontSize = 17.sp, fontWeight = FontWeight.Black, color = colorScheme.onBackground)
-            Spacer(Modifier.weight(1f))
-            Text(
-                "See all →",
-                fontSize = 13.sp, fontWeight = FontWeight.Bold,
-                color = colorScheme.primary,
-                modifier = Modifier.clickable { }
-            )
-        }
-
-        Spacer(Modifier.height(12.dp))
-
-        Row(
-            Modifier.padding(horizontal = 20.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            categories.forEach { (emoji, label) ->
-                val isSelected = label == selectedCategory
-                Column(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(if (isSelected) colorScheme.primary else colorScheme.surfaceVariant)
-                        .border(
-                            2.dp,
-                            if (isSelected) colorScheme.primary else colorScheme.outline,
-                            RoundedCornerShape(16.dp)
-                        )
-                        .clickable { selectedCategory = label }
-                        .padding(horizontal = 14.dp, vertical = 10.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(emoji, fontSize = 20.sp)
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        label,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isSelected) colorScheme.onPrimary else colorScheme.onSurfaceVariant
+            Spacer(Modifier.height(12.dp))
+            
+            if (transactions.isEmpty()) {
+                Box(Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
+                    Text(stringResource(R.string.no_transactions), color = colorScheme.onSurfaceVariant)
+                }
+            } else {
+                transactions.take(10).forEach { transaction ->
+                    ImprovedTransactionItem(
+                        transaction = transaction,
+                        onLongClick = { transactionToDelete = transaction }
                     )
+                    Spacer(Modifier.height(10.dp))
                 }
             }
+            
+            Spacer(Modifier.height(80.dp))
         }
+    }
 
-        Spacer(Modifier.height(24.dp))
-
-        // ── RECENT TRANSACTIONS ──
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Recent Transactions", fontSize = 17.sp, fontWeight = FontWeight.Black, color = colorScheme.onBackground)
-            Spacer(Modifier.weight(1f))
-            Text(
-                "All →",
-                fontSize = 13.sp, fontWeight = FontWeight.Bold,
-                color = colorScheme.primary,
-                modifier = Modifier.clickable { }
-            )
-        }
-
-        Spacer(Modifier.height(12.dp))
-
-        transactions.forEach { (name, date, amount) ->
-            ImprovedTransactionItem(name = name, date = date, amount = amount)
-            Spacer(Modifier.height(10.dp))
-        }
-
-        Spacer(Modifier.height(16.dp))
+    if (transactionToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { transactionToDelete = null },
+            title = { Text(stringResource(R.string.delete_transaction)) },
+            text = { Text(stringResource(R.string.delete_confirm)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    transactionViewModel.deleteTransaction(transactionToDelete!!)
+                    transactionToDelete = null
+                }) { Text(stringResource(R.string.delete), color = colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { transactionToDelete = null }) { Text(stringResource(R.string.cancel)) }
+            }
+        )
     }
 }
 
 @Composable
-fun ImprovedTransactionItem(name: String, date: String, amount: Float) {
-    val isPositive = amount >= 0
-    val emoji = when {
-        name.contains("Salary") -> "💼"
-        name.contains("Auchan") || name.contains("Kaufland") -> "🛒"
-        else -> "💸"
-    }
+fun ImprovedTransactionItem(transaction: Transaction, onLongClick: () -> Unit) {
+    val isPositive = transaction.type == "income"
     val colorScheme = MaterialTheme.colorScheme
+    val dateStr = SimpleDateFormat("MMM dd", Locale.getDefault()).format(Date(transaction.date))
+
+    val categoryIcons = mapOf(
+        "Food" to "🛒", "Transport" to "🚗", "Health" to "🏥", "Fun" to "🎭", "Shopping" to "🛍️", "Bills" to "🧾", "Education" to "🎓",
+        "Salary" to "💼", "Gift" to "🎁", "Investment" to "📈", "Freelance" to "💻"
+    )
+    val icon = categoryIcons[transaction.category] ?: "💸"
 
     Row(
         modifier = Modifier
@@ -316,41 +271,30 @@ fun ImprovedTransactionItem(name: String, date: String, amount: Float) {
             .shadow(4.dp, RoundedCornerShape(18.dp))
             .clip(RoundedCornerShape(18.dp))
             .background(colorScheme.surface)
+            .pointerInput(Unit) {
+                detectTapGestures(onLongPress = { onLongClick() })
+            }
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Icon circle
         Box(
-            modifier = Modifier
-                .size(46.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(if (isPositive) SuccessGreen.copy(alpha = 0.1f) else colorScheme.error.copy(alpha = 0.1f)),
+            modifier = Modifier.size(46.dp).clip(RoundedCornerShape(14.dp)).background(if (isPositive) SuccessGreen.copy(alpha = 0.1f) else colorScheme.error.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
-            Text(emoji, fontSize = 20.sp)
+            Text(icon, fontSize = 20.sp)
         }
 
         Spacer(Modifier.width(14.dp))
 
         Column(Modifier.weight(1f)) {
-            Text(name, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSurface)
-            Text(date, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = colorScheme.onSurfaceVariant)
+            Text(transaction.description, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSurface)
+            Text(dateStr, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = colorScheme.onSurfaceVariant)
         }
 
-        // Amount badge
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(10.dp))
-                .background(if (isPositive) SuccessGreen.copy(alpha = 0.1f) else colorScheme.error.copy(alpha = 0.1f))
-                .padding(horizontal = 10.dp, vertical = 5.dp)
-        ) {
-            val amountColor = if (isPositive) SuccessGreen else colorScheme.error
-            Text(
-                text = if (isPositive) "+${amount.toInt()}" else "${amount.toInt()}",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Black,
-                color = amountColor
-            )
-        }
+        Text(
+            text = if (isPositive) "+$${String.format(Locale.US, "%,.2f", transaction.amount)}" else "-$${String.format(Locale.US, "%,.2f", transaction.amount)}",
+            fontSize = 14.sp, fontWeight = FontWeight.Black,
+            color = if (isPositive) SuccessGreen else colorScheme.error
+        )
     }
 }

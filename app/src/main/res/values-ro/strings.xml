@@ -1,0 +1,110 @@
+<resources>
+    <string name="app_name">SpendSmart</string>
+
+    <!-- Login & SignUp -->
+    <string name="login_title">SpendSmart</string>
+    <string name="email">Email</string>
+    <string name="password">Parolă</string>
+    <string name="sign_in">Autentificare</string>
+    <string name="sign_up">Înregistrare</string>
+    <string name="sign_in_fingerprint">Autentificare cu Amprentă</string>
+    <string name="dont_have_account">Nu ai cont? </string>
+    <string name="already_have_account">Ai deja un cont? </string>
+    <string name="create_account">Creează Cont</string>
+    <string name="username">Nume utilizator</string>
+    <string name="confirm_password">Confirmă Parola</string>
+    <string name="enable_biometric">Activează Autentificarea Biometrică</string>
+    <string name="track_spending_smartly">Gestionează-ți cheltuielile inteligent</string>
+
+    <!-- Dashboard -->
+    <string name="available_balance">Sold Disponibil</string>
+    <string name="this_month_label">Luna aceasta:</string>
+    <string name="categories">Categorii</string>
+    <string name="recent_transactions">Tranzacții Recente</string>
+    <string name="set_monthly_budget">Setează Bugetul Lunar</string>
+    <string name="no_transactions">Nu există tranzacții</string>
+    <string name="recent_activity">Activitate Recentă</string>
+    <string name="budget_alert_message">⚠️ Ai folosit peste 80% din bugetul lunar!</string>
+    <string name="delete_transaction">Șterge Tranzacția</string>
+    <string name="delete_confirm">Ești sigur că vrei să ștergi această tranzacție?</string>
+    <string name="left_to_spend">rămas</string>
+    <string name="of_budget">din buget</string>
+    <string name="hello">Salut,</string>
+
+    <!-- Add Transaction -->
+    <string name="add_transaction">Adaugă Tranzacție</string>
+    <string name="expense">Cheltuială</string>
+    <string name="income">Venit</string>
+    <string name="amount_label">Sumă (RON)</string>
+    <string name="select_category">Selectează Categoria</string>
+    <string name="description">Descriere (Opțional)</string>
+    <string name="date">Dată</string>
+    <string name="recurring_reminder">Reminder Recurent</string>
+    <string name="save_transaction">Salvează Tranzacția</string>
+    <string name="none">Niciunul</string>
+    <string name="daily">Zilnic</string>
+    <string name="weekly">Săptămânal</string>
+    <string name="monthly">Lunar</string>
+    <string name="category_food">Mâncare</string>
+    <string name="category_transport">Transport</string>
+    <string name="category_health">Sănătate</string>
+    <string name="category_fun">Distracție</string>
+    <string name="category_shopping">Cumpărături</string>
+    <string name="category_bills">Facturi</string>
+    <string name="category_education">Educație</string>
+    <string name="category_salary">Salariu</string>
+    <string name="category_gift">Cadou</string>
+    <string name="category_investment">Investiții</string>
+    <string name="category_freelance">Freelance</string>
+    <string name="category_all">Toate</string>
+
+    <!-- Budget -->
+    <string name="budgets">Buget</string>
+    <string name="spent">Cheltuit</string>
+    <string name="remaining">Rămas</string>
+    <string name="prediction_exceed">⚠️ La acest ritm vei depăși bugetul cu</string>
+    <string name="prediction_on_track">✅ Ești pe drumul cel bun! Vei economisi</string>
+    <string name="set_budget_prompt">Setează un buget pentru a vedea progresul</string>
+    <string name="edit_budget_limits">Modifică limitele bugetului</string>
+    <string name="total_monthly_limit">Limită lunară totală</string>
+    <string name="limit_per_category">Limită per categorie</string>
+    <string name="budget_configuration">Configurare Buget</string>
+    <string name="sum_categories_warning">⚠️ Atenție: Suma categoriilor depășește limita totală!</string>
+    <string name="spent_of">cheltuit</string>
+    <string name="modify_budget_limits">Modifică limitele bugetului</string>
+
+    <!-- Settings -->
+    <string name="settings">Setări</string>
+    <string name="profile">Profil</string>
+    <string name="edit">Editează</string>
+    <string name="security_preferences">Securitate și Preferințe</string>
+    <string name="change_password">Schimbă Parola</string>
+    <string name="fingerprint_login">Autentificare cu Amprentă</string>
+    <string name="biometric_auth">Autentificare Biometrică</string>
+    <string name="notifications">Notificări</string>
+    <string name="push_notifications">Notificări Push</string>
+    <string name="budget_alert_80">Alertă Buget 80%</string>
+    <string name="preferences">Preferințe</string>
+    <string name="currency">Monedă</string>
+    <string name="language">Limbă</string>
+    <string name="dark_mode">Mod Întunecat</string>
+    <string name="log_out">Deconectare</string>
+    <string name="old_password">Parola Veche</string>
+    <string name="new_password">Parola Nouă</string>
+    <string name="update">Actualizează</string>
+    <string name="display_name">Nume afișat</string>
+
+    <!-- General -->
+    <string name="save">Salvează</string>
+    <string name="cancel">Anulează</string>
+    <string name="delete">Șterge</string>
+    <string name="confirm">Confirmă</string>
+    <string name="loading">Se încarcă...</string>
+    <string name="success_transaction_saved">Tranzacție salvată cu succes</string>
+    <string name="success_budget_saved">Buget salvat cu succes</string>
+    <string name="success_profile_updated">Profil actualizat cu succes</string>
+    <string name="success_password_changed">Parola a fost schimbată cu succes</string>
+    <string name="error_saving">Eroare la salvarea datelor</string>
+    <string name="error_invalid_amount">Vă rugăm să introduceți o sumă validă</string>
+    <string name="error_select_category">Vă rugăm să selectați o categorie</string>
+</resources>

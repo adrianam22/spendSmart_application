@@ -1,5 +1,6 @@
 package com.spendsmart.ui.screens
 
+import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,24 +16,41 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
+import androidx.core.content.ContextCompat
+import com.spendsmart.R
+import com.spendsmart.ui.viewmodel.AuthViewModel
+import com.spendsmart.utils.SpendSmartBiometricManager
 
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit) {
-
-    var email    by remember { mutableStateOf("") }
+fun LoginScreen(
+    viewModel: AuthViewModel,
+    onLoginSuccess: () -> Unit,
+    onNavigateToSignUp: () -> Unit
+) {
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var showPass by remember { mutableStateOf(false) }
-    var emailErr by remember { mutableStateOf("") }
-    var passErr  by remember { mutableStateOf("") }
+    var errorMsg by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
+    val context = LocalContext.current
     val colorScheme = MaterialTheme.colorScheme
+
+    // Verificăm dacă utilizatorul este deja logat (pentru auto-login la pornire)
+    LaunchedEffect(viewModel.isLoggedIn) {
+        if (viewModel.isLoggedIn) {
+            onLoginSuccess()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -42,178 +60,82 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         Spacer(Modifier.height(48.dp))
-
-        // app logo
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("💰", fontSize = 36.sp)
-        }
-
+        Box(modifier = Modifier.size(80.dp).clip(RoundedCornerShape(24.dp)).background(colorScheme.primaryContainer), contentAlignment = Alignment.Center) { Text("💰", fontSize = 36.sp) }
         Spacer(Modifier.height(14.dp))
-
-        Text(
-            text = "SpendSmart",
-            fontSize = 26.sp,
-            fontWeight = FontWeight.Black,
-            color = colorScheme.onBackground
-        )
-
-        Text(
-            text = "Track your spending smartly",
-            fontSize = 14.sp,
-            color = colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 4.dp)
-        )
-
+        Text(stringResource(R.string.login_title), fontSize = 26.sp, fontWeight = FontWeight.Black)
         Spacer(Modifier.height(40.dp))
 
-        // ── CARD FORMULAR ──
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
-            elevation = CardDefaults.cardElevation(4.dp)
-        ) {
+        Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp), colors = CardDefaults.cardColors(containerColor = colorScheme.surface)) {
             Column(Modifier.padding(24.dp)) {
-
-                // Email
-                Text("Email", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = colorScheme.onSurface)
-                Spacer(Modifier.height(6.dp))
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it; emailErr = "" },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("example@email.com") },
-                    leadingIcon = { Icon(Icons.Default.Email, null) },
-                    shape = RoundedCornerShape(50.dp),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    isError = emailErr.isNotEmpty(),
-                    supportingText = if (emailErr.isNotEmpty()) {{ Text(emailErr) }} else null,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = colorScheme.primary,
-                        unfocusedBorderColor = colorScheme.outline,
-                        errorBorderColor = colorScheme.error
-                    )
-                )
-
+                Text(stringResource(R.string.email), fontWeight = FontWeight.Bold)
+                OutlinedTextField(value = email, onValueChange = { email = it; errorMsg = "" }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(50.dp), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email))
                 Spacer(Modifier.height(12.dp))
+                Text(stringResource(R.string.password), fontWeight = FontWeight.Bold)
+                OutlinedTextField(value = password, onValueChange = { password = it; errorMsg = "" }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(50.dp), visualTransformation = if (showPass) VisualTransformation.None else PasswordVisualTransformation(), trailingIcon = { Text(if (showPass) "Hide" else "Show", modifier = Modifier.clickable { showPass = !showPass }.padding(end = 8.dp)) })
 
-                // Password
-                Text("Password", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = colorScheme.onSurface)
-                Spacer(Modifier.height(6.dp))
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it; passErr = "" },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("••••••••") },
-                    leadingIcon = { Icon(Icons.Default.Lock, null) },
-                    visualTransformation = if (showPass) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
-                        Text(
-                            if (showPass) "Hide" else "Show",
-                            fontSize = 12.sp, fontWeight = FontWeight.Bold,
-                            color = colorScheme.primary,
-                            modifier = Modifier
-                                .clickable { showPass = !showPass }
-                                .padding(end = 8.dp)
-                        )
-                    },
-                    shape = RoundedCornerShape(50.dp),
-                    singleLine = true,
-                    isError = passErr.isNotEmpty(),
-                    supportingText = if (passErr.isNotEmpty()) {{ Text(passErr) }} else null,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = colorScheme.primary,
-                        unfocusedBorderColor = colorScheme.outline,
-                        errorBorderColor = colorScheme.error
-                    )
-                )
+                if (errorMsg.isNotEmpty()) { Text(errorMsg, color = colorScheme.error, fontSize = 12.sp, modifier = Modifier.padding(top = 8.dp)) }
+                Spacer(Modifier.height(24.dp))
 
-                // Forgot password
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                    Text(
-                        "Forgot password?",
-                        fontSize = 13.sp, fontWeight = FontWeight.Bold,
-                        color = colorScheme.secondary,
-                        modifier = Modifier
-                            .padding(top = 8.dp, bottom = 18.dp)
-                            .clickable { }
-                    )
-                }
-
-                // Sign In button
                 Button(
                     onClick = {
-                        var valid = true
-                        if (email.isBlank()) { emailErr = "Enter your email"; valid = false }
-                        else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) { emailErr = "Invalid email"; valid = false }
-                        if (password.isBlank()) { passErr = "Enter your password"; valid = false }
-                        else if (password.length < 6) { passErr = "Minimum 6 characters"; valid = false }
-                        if (valid) onLoginSuccess()
+                        isLoading = true
+                        viewModel.login(email, password, onSuccess = { isLoading = false; onLoginSuccess() }, onError = { isLoading = false; errorMsg = it })
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(54.dp),
-                    shape = RoundedCornerShape(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary)
+                    modifier = Modifier.fillMaxWidth().height(54.dp), shape = RoundedCornerShape(50.dp), enabled = !isLoading
                 ) {
-                    Text("Sign In", fontSize = 16.sp, fontWeight = FontWeight.Black, color = colorScheme.onPrimary)
+                    if (isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                    else Text(stringResource(R.string.sign_in), fontWeight = FontWeight.Black)
                 }
 
-                // Divider
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    HorizontalDivider(Modifier.weight(1f), color = colorScheme.outlineVariant)
-                    Text(" OR ", fontSize = 12.sp, color = colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
-                    HorizontalDivider(Modifier.weight(1f), color = colorScheme.outlineVariant)
-                }
-
-                // Fingerprint button
-                OutlinedButton(
-                    onClick = { /* BiometricPrompt */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(54.dp),
-                    shape = RoundedCornerShape(50.dp),
-                    border = ButtonDefaults.outlinedButtonBorder.copy(
-                        width = 2.dp
-                    ),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = colorScheme.primary)
-                ) {
-                    Text("🫆  ", fontSize = 18.sp)
-                    Text("Sign In with Fingerprint", fontSize = 15.sp, fontWeight = FontWeight.Black)
-                }
-
-                // Sign Up link
                 Spacer(Modifier.height(16.dp))
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+
+                // --- BUTON AMPRENTĂ REPARAT ---
+                OutlinedButton(
+                    onClick = {
+                        if (!SpendSmartBiometricManager.isBiometricAssociated(context)) {
+                            errorMsg = "Nu există cont asociat amprentei. Loghează-te manual și activează amprenta din Setări."
+                            return@OutlinedButton
+                        }
+                        
+                        val executor = ContextCompat.getMainExecutor(context)
+                        val biometricPrompt = BiometricPrompt(context as FragmentActivity, executor,
+                            object : BiometricPrompt.AuthenticationCallback() {
+                                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                                    super.onAuthenticationSucceeded(result)
+                                    isLoading = true
+                                    // ACUM APELĂM LOGIN-UL REAL ÎN FIREBASE
+                                    viewModel.loginWithBiometric(context, 
+                                        onSuccess = { isLoading = false; onLoginSuccess() },
+                                        onError = { isLoading = false; errorMsg = it }
+                                    )
+                                }
+                                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                                    super.onAuthenticationError(errorCode, errString)
+                                    errorMsg = errString.toString()
+                                }
+                            })
+
+                        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                            .setTitle("SpendSmart Login")
+                            .setSubtitle("Scanează amprenta pentru acces la cont")
+                            .setNegativeButtonText(context.getString(R.string.password))
+                            .build()
+
+                        biometricPrompt.authenticate(promptInfo)
+                    },
+                    modifier = Modifier.fillMaxWidth().height(54.dp),
+                    shape = RoundedCornerShape(50.dp)
                 ) {
-                    Text("Don't have an account? ", fontSize = 13.sp, color = colorScheme.onSurfaceVariant)
-                    Text(
-                        "Sign Up",
-                        fontSize = 13.sp, fontWeight = FontWeight.Black,
-                        color = colorScheme.primary,
-                        textDecoration = TextDecoration.Underline,
-                        modifier = Modifier.clickable { }
-                    )
+                    Text("🫆 " + stringResource(R.string.sign_in_fingerprint), fontWeight = FontWeight.Black)
+                }
+
+                Spacer(Modifier.height(16.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    Text(stringResource(R.string.dont_have_account))
+                    Text(stringResource(R.string.sign_up), color = colorScheme.primary, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onNavigateToSignUp() })
                 }
             }
         }
-
-        Spacer(Modifier.height(32.dp))
     }
 }
